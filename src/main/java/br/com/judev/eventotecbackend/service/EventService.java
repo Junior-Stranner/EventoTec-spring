@@ -2,6 +2,7 @@ package br.com.judev.eventotecbackend.service;
 
 import br.com.judev.eventotecbackend.domain.event.Event;
 import br.com.judev.eventotecbackend.domain.event.EventRequestDto;
+import br.com.judev.eventotecbackend.repositories.EventRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +24,11 @@ public class EventService {
     @Value("${aws.bucket.name}")
     private String bucketName;
 
-
     @Autowired
     private AmazonS3 s3Client;
+
+    @Autowired
+    private EventRepository eventRepository;
 
 
     public Event createEvent(EventRequestDto data) {
@@ -43,6 +46,8 @@ public class EventService {
         newEvent.setImgUrl(imgUrl);
         newEvent.setRemote(data.remote());
 
+        eventRepository.save(newEvent);
+
         return newEvent;
     }
 
@@ -52,10 +57,13 @@ public class EventService {
         try {
             File file = this.convertMultipartToFile(multipartFile);
             s3Client.putObject(bucketName ,filename,file);
+            file.delete();
+            return s3Client.getUrl(bucketName, filename).toString();
         }catch (Exception e){
-
+            System.out.println("erro ao subir arquivo");
+            System.out.println(e.getMessage());
+            return "";
         }
-      return "";
     }
     private File convertMultipartToFile(MultipartFile multipartFile) throws IOException {
         // Cria um novo arquivo usando o nome original do arquivo multipart
