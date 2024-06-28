@@ -6,10 +6,12 @@ import br.com.judev.eventotecbackend.domain.event.EventRequestDto;
 import br.com.judev.eventotecbackend.domain.event.EventResponseDto;
 import br.com.judev.eventotecbackend.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -38,4 +40,17 @@ public class EventController {
         List<EventResponseDto> allEvents = eventService.getUpcomingEvents(page, size);
         return ResponseEntity.ok(allEvents);
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<EventResponseDto>> filterEvents(@RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "10") int size,
+                                                               @RequestParam String city,
+                                                               @RequestParam String uf,
+                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate){
+        List<EventResponseDto> events = eventService.getUpcomingEvents(page, size);
+        return ResponseEntity.ok(events);
+    }
+
+
 }

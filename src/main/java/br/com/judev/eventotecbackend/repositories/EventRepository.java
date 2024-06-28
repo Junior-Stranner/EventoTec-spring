@@ -8,12 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public interface EventRepository extends JpaRepository <Event , UUID>{
 
     @Query("SELECT e FROM Event e LEFT JOIN FETCH e.address a WHERE e.date >= :currentDate")
     public Page<Event> findUpcomingEvents(@Param("currentDate") Date currentDate, Pageable pageable);
+
 
     @Query("SELECT e FROM Event e LEFT JOIN e.address a " +
             "WHERE e.date >= :currentDate " +
@@ -28,5 +30,11 @@ public interface EventRepository extends JpaRepository <Event , UUID>{
                                    @Param("startDate") Date startDate,
                                    @Param("endDate") Date endDate,
                                    Pageable pageable);
+
+
+    @Query("SELECT e FROM Event e LEFT JOIN e.address a " +
+            "WHERE (:title IS NULL OR e.title LIKE %:title%) ")
+    List<Event> findEventsByTitle(@Param("title") String title);
+
 
 }
