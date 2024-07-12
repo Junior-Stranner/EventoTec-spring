@@ -42,15 +42,19 @@ public class EventController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<EventResponseDto>> filterEvents(@RequestParam(defaultValue = "0") int page,
-                                                               @RequestParam(defaultValue = "10") int size,
-                                                               @RequestParam String city,
-                                                               @RequestParam String uf,
-                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-                                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate){
-        List<EventResponseDto> events = eventService.getUpcomingEvents(page, size);
+    public ResponseEntity<List<EventResponseDto>> getFilteredEvents(@RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                    @RequestParam String city,
+                                                                    @RequestParam String uf,
+                                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+                                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate) {
+        List<EventResponseDto> events = eventService.getFilteredEvents(page, size, city, uf, startDate, endDate);
         return ResponseEntity.ok(events);
     }
 
-
+    @GetMapping("/search")
+    public ResponseEntity<List<EventResponseDto>> getSearchEvents(@RequestParam String title) {
+        List<EventResponseDto> events = eventService.searchEvents(title);
+        return ResponseEntity.ok(events);
+    }
 }

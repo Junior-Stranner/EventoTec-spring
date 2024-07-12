@@ -3,6 +3,7 @@ package br.com.judev.eventotecbackend.service;
 import br.com.judev.eventotecbackend.domain.event.Event;
 import br.com.judev.eventotecbackend.domain.event.EventRequestDto;
 import br.com.judev.eventotecbackend.domain.event.EventResponseDto;
+import br.com.judev.eventotecbackend.event.EventAddressProjection;
 import br.com.judev.eventotecbackend.repositories.EventRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -63,17 +67,6 @@ public class EventService {
         return newEvent;
     }
 
-    public List<EventResponseDto> getUpcomingEvents(int page , int size){
-        Pageable pageable = PageRequest.of(page,size);
-        Page<Event> eventsPages = eventRepository.findUpcomingEvents(new Date(), pageable);
-        return eventsPages.map(event -> new EventResponseDto(event.getId(),event.getTitle(), event.getDescription(), event.getDate(),
-                event.getAddress() != null ? event.getAddress().getCity() : "",
-                event.getAddress() != null ? event.getAddress().getUf() : "",
-                event.getRemote(),
-                event.getEventUrl(),
-                event.getImgUrl())).stream().toList();
-    }
-
     private String uploadImg(MultipartFile multipartFile) {
         // Gera um nome único para o arquivo usando UUID e o nome original do arquivo
         String filename = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
@@ -114,4 +107,61 @@ public class EventService {
         return convFile;
     }
 
+    public List<EventResponseDto> getUpcomingEvents(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EventAddressProjection> eventsPage = eventRepository.findUpcomingEvents(new Date(), pageable);
+        return eventsPage.map(event -> new EventResponseDto(
+                        event.getId(),
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getDate(),
+                        event.getCity() != null ? event.getCity() : "",
+                        event.getUf() != null ? event.getUf() : "",
+                        event.getRemote(),
+                        event.getEventUrl(),
+                        event.getImgUrl())
+                )
+                .stream().toList();
+    }
+
+    public List<EventResponseDto> getFilteredEvents(int page, int size, String city, String uf, Date startDate, Date endDate){
+        city = (city != null) ? city : "";
+        uf = (uf != null) ? uf : "";
+        startDate = (startDate != null) ? startDate : new Date(0);
+        endDate = (endDate != null) ? endDate : new Date();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<EventAddressProjection> eventsPage = eventRepository.findFilteredEvents(city, uf, startDate, endDate, pageable);
+        return eventsPage.map(event -> new EventResponseDto(
+                        event.getId(),
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getDate(),
+                        event.getCity() != null ? event.getCity() : "",
+                        event.getUf() != null ? event.getUf() : "",
+                        event.getRemote(),
+                        event.getEventUrl(),
+                        event.getImgUrl())
+                )
+                .stream().toList();
+    }
+
+    public List<EventResponseDto> searchEvents(String title){
+        title = (title != null) ? title : "";
+
+        List<EventAddressProjection> eventsList = eventRepository.findEventsByTitle(title);
+        return eventsList.stream().map(event -> new EventResponseDto(
+                        event.getId(),
+                        event.getTitle(),
+                        event.getDescription(),
+                        event.getDate(),
+                        event.getCity() != null ? event.getCity() : "",
+                        event.getUf() != null ? event.getUf() : "",
+                        event.getRemote(),
+                        event.getEventUrl(),
+                        event.getImgUrl())
+                )
+                .toList();
+    }
 }
