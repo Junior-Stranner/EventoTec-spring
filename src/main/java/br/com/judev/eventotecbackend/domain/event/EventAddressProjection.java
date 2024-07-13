@@ -3,11 +3,9 @@ package br.com.judev.eventotecbackend.domain.event;
 import java.util.Date;
 import java.util.UUID;
 
-/*A interface EventAddressProkection define um contrato de projeção para um evento,
- especificando um conjunto de métodos que devem ser implementados para acessar os detalhes do evento.
- Em particular, essa interface parece ser usada em um contexto de Spring Data JPA para projetar dados
- de uma entidade de evento em uma forma simplificada ou específica. Isso pode ser útil para retornar
- apenas os dados necessários em uma consulta, em vez de toda a entidade, melhorando a performance e a eficiência.*/
+/*Projections: São usados para otimizar consultas ao banco de dados, recuperando apenas os campos necessários e evitando o
+carregamento de entidades completas. Eles melhoram o desempenho e reduzem a quantidade de dados transferidos do banco de
+dados para a aplicação.*/
 
 public interface EventAddressProjection {
     UUID getId();

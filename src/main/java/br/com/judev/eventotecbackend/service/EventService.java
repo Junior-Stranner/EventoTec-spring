@@ -1,6 +1,9 @@
 package br.com.judev.eventotecbackend.service;
 
+import br.com.judev.eventotecbackend.domain.address.Address;
+import br.com.judev.eventotecbackend.domain.coupon.Coupon;
 import br.com.judev.eventotecbackend.domain.event.Event;
+import br.com.judev.eventotecbackend.domain.event.EventDetailsDto;
 import br.com.judev.eventotecbackend.domain.event.EventRequestDto;
 import br.com.judev.eventotecbackend.domain.event.EventResponseDto;
 import br.com.judev.eventotecbackend.event.EventAddressProjection;
@@ -21,10 +24,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -41,6 +42,9 @@ public class EventService {
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private CouponService couponService;
 
 
     public Event createEvent(EventRequestDto data) {
@@ -128,6 +132,38 @@ public class EventService {
                 )
                 .stream().toList();
     }
+
+    public EventDetailsDto getEventDetails(UUID eventId) {
+        // Busca o evento pelo ID. Se não encontrar, lança uma exceção IllegalArgumentException com a mensagem "Event not found".
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        // Consulta os cupons associados ao evento com a data atual como referência de validade.
+        List<Coupon> coupons = couponService.consultCoupons(eventId, new Date());
+
+        // Converte a lista de Coupon para uma lista de CouponDto, usando um stream para mapear cada Coupon para um CouponDto.
+        List<EventDetailsDto.CouponDto> couponDtos = coupons.stream()
+                .map(coupon -> new EventDetailsDto.CouponDto(
+                        coupon.getCode(),
+                        coupon.getDiscount(),
+                        coupon.getValid()))
+                .collect(Collectors.toList());
+
+        // Busca o endereço associado ao evento pelo ID do evento.
+        Optional<Address> address = addressService.findByEventId(eventId);
+
+        // Cria e retorna um novo EventDetailsDto com as informações do evento, incluindo cupons e endereço (se presente).
+        return new EventDetailsDto(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                address.isPresent() ? address.get().getCity() : "",  // Verifica se o endereço está presente e pega a cidade, caso contrário, retorna uma string vazia.
+                address.isPresent() ? address.get().getUf() : "",    // Verifica se o endereço está presente e pega o estado, caso contrário, retorna uma string vazia.
+                event.getImgUrl(),
+                event.getEventUrl(),
+                couponDtos);
+    }
+
 
     public List<EventResponseDto> getFilteredEvents(int page, int size, String city, String uf, Date startDate, Date endDate) {
         // Define valores padrão para city, uf, startDate e endDate se forem nulos
