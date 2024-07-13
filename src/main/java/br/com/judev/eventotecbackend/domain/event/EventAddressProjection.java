@@ -9,7 +9,7 @@ import java.util.UUID;
  de uma entidade de evento em uma forma simplificada ou específica. Isso pode ser útil para retornar
  apenas os dados necessários em uma consulta, em vez de toda a entidade, melhorando a performance e a eficiência.*/
 
-public interface EventAddressProkection {
+public interface EventAddressProjection {
     UUID getId();
     String getTitle();
     String getDescription();

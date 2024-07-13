@@ -107,16 +107,21 @@ public class EventService {
         return convFile;
     }
 
-    public List<EventResponseDto> getUpcomingEvents(int page, int size){
+    public List<EventResponseDto> getUpcomingEvents(int page, int size) {
+        // Cria um objeto Pageable para definir a página e o tamanho da página
         Pageable pageable = PageRequest.of(page, size);
+
+        // Busca eventos futuros no repositório usando a data atual e paginação
         Page<EventAddressProjection> eventsPage = eventRepository.findUpcomingEvents(new Date(), pageable);
+
+        // Mapeia os eventos encontrados para o DTO EventResponseDto e retorna como uma lista
         return eventsPage.map(event -> new EventResponseDto(
                         event.getId(),
                         event.getTitle(),
                         event.getDescription(),
                         event.getDate(),
-                        event.getCity() != null ? event.getCity() : "",
-                        event.getUf() != null ? event.getUf() : "",
+                        event.getCity() != null ? event.getCity() : "", // Verifica se a cidade é nula
+                        event.getUf() != null ? event.getUf() : "", // Verifica se a UF é nula
                         event.getRemote(),
                         event.getEventUrl(),
                         event.getImgUrl())
@@ -124,22 +129,27 @@ public class EventService {
                 .stream().toList();
     }
 
-    public List<EventResponseDto> getFilteredEvents(int page, int size, String city, String uf, Date startDate, Date endDate){
+    public List<EventResponseDto> getFilteredEvents(int page, int size, String city, String uf, Date startDate, Date endDate) {
+        // Define valores padrão para city, uf, startDate e endDate se forem nulos
         city = (city != null) ? city : "";
         uf = (uf != null) ? uf : "";
-        startDate = (startDate != null) ? startDate : new Date(0);
-        endDate = (endDate != null) ? endDate : new Date();
+        startDate = (startDate != null) ? startDate : new Date(0); // Data inicial padrão é 01/01/1970
+        endDate = (endDate != null) ? endDate : new Date(); // Data final padrão é a data atual
 
+        // Cria um objeto Pageable para definir a página e o tamanho da página
         Pageable pageable = PageRequest.of(page, size);
 
+        // Busca eventos filtrados no repositório usando os filtros fornecidos e paginação
         Page<EventAddressProjection> eventsPage = eventRepository.findFilteredEvents(city, uf, startDate, endDate, pageable);
+
+        // Mapeia os eventos encontrados para o DTO EventResponseDto e retorna como uma lista
         return eventsPage.map(event -> new EventResponseDto(
                         event.getId(),
                         event.getTitle(),
                         event.getDescription(),
                         event.getDate(),
-                        event.getCity() != null ? event.getCity() : "",
-                        event.getUf() != null ? event.getUf() : "",
+                        event.getCity() != null ? event.getCity() : "", // Verifica se a cidade é nula
+                        event.getUf() != null ? event.getUf() : "", // Verifica se a UF é nula
                         event.getRemote(),
                         event.getEventUrl(),
                         event.getImgUrl())
@@ -147,21 +157,26 @@ public class EventService {
                 .stream().toList();
     }
 
-    public List<EventResponseDto> searchEvents(String title){
+    public List<EventResponseDto> searchEvents(String title) {
+        // Define valor padrão para title se for nulo
         title = (title != null) ? title : "";
 
+        // Busca eventos no repositório com título correspondente
         List<EventAddressProjection> eventsList = eventRepository.findEventsByTitle(title);
+
+        // Mapeia os eventos encontrados para o DTO EventResponseDto e retorna como uma lista
         return eventsList.stream().map(event -> new EventResponseDto(
                         event.getId(),
                         event.getTitle(),
                         event.getDescription(),
                         event.getDate(),
-                        event.getCity() != null ? event.getCity() : "",
-                        event.getUf() != null ? event.getUf() : "",
+                        event.getCity() != null ? event.getCity() : "", // Verifica se a cidade é nula
+                        event.getUf() != null ? event.getUf() : "", // Verifica se a UF é nula
                         event.getRemote(),
                         event.getEventUrl(),
                         event.getImgUrl())
                 )
                 .toList();
     }
+
 }
